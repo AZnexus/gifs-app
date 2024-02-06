@@ -11,11 +11,13 @@ export class GifsService {
 
   public gifList: Gif[] = [];
 
-  private _tagsHistory: string[] = []; // es posa el guió baix com a 'standard' per indicar que es PRIVAT
+  private _tagsHistory: string[] = []; // es posa el guió baix com a 'standard' per indicar que es PRIVAT ??????
   private apiKey: string = 'S9BwfF1hAKl8RFxBRy8Eco1QFFspmGXV'; // tambe es podria posar com a const fora de la class
   private serviceUrl: string = 'https://api.giphy.com/v1/gifs';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.loadLocalStorage(); // Carrega les dades del localStorage si n'hi ha
+  }
 
   get tagsHistory() {
     return [...this._tagsHistory]; // l'spread (...) es per passar el valor per referencia i que no puguin editar el valor
@@ -30,6 +32,18 @@ export class GifsService {
 
     this._tagsHistory.unshift(tag); // Añado el tag nuevo al inicio
     this._tagsHistory = this._tagsHistory.splice(0,10); // Limita a 10 elements
+    this.saveLocalStorage(); // Guarda a localStorage
+  }
+
+  private saveLocalStorage():void {
+    localStorage.setItem('history', JSON.stringify(this._tagsHistory));
+  }
+
+  private loadLocalStorage():void {
+    if(!localStorage.getItem('history')) return; // Si no hi ha dades, no el carrega
+    this._tagsHistory = JSON.parse(localStorage.getItem('history')!); // Es posa el not-null operator (!) per assegurar que no vindrà a null, ja que es controla en la linia anterior.
+    if(this._tagsHistory.length === 0) return;
+    this.searchTag(this.tagsHistory[0]); // Al fer la càrrega inicial, farà que apareguin els gifs de la última cerca.
   }
 
   // async searchTag(tag: string):Promise<void> { // OLD VERSION - Amb el fetch
